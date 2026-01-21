@@ -12,6 +12,7 @@ import {
   SafeAreaView,
   ScrollView,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -464,43 +465,50 @@ export default function App() {
         visible={noteModalVisible}
         onRequestClose={() => setNoteModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>E-Transfer Note</Text>
-            <Text style={styles.modalSubtitle}>
-              For: {selectedParticipant?.name}
-            </Text>
-            
-            <TextInput
-              style={[styles.input, styles.noteInput]}
-              placeholder="Enter E-Transfer name or note (optional)"
-              value={noteInput}
-              onChangeText={setNoteInput}
-              multiline
-              autoFocus
-            />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoid}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.noteModalContent}>
+              <Text style={styles.noteModalTitle}>E-Transfer Note</Text>
+              <Text style={styles.noteModalSubtitle}>
+                {selectedParticipant?.name}
+              </Text>
+              
+              <TextInput
+                style={styles.noteInput}
+                placeholder="E-Transfer sender name (optional)"
+                value={noteInput}
+                onChangeText={setNoteInput}
+                multiline={false}
+                autoFocus
+                returnKeyType="done"
+                blurOnSubmit={true}
+              />
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setNoteModalVisible(false);
-                  setNoteInput('');
-                  setSelectedParticipant(null);
-                }}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setNoteModalVisible(false);
+                    setNoteInput('');
+                    setSelectedParticipant(null);
+                  }}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={saveNote}
-              >
-                <Text style={[styles.modalButtonText, styles.saveButtonText]}>Save</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.saveButton]}
+                  onPress={saveNote}
+                >
+                  <Text style={[styles.modalButtonText, styles.saveButtonText]}>Save</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Review Parsed Names Modal */}
@@ -707,6 +715,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#d1d5db',
   },
+  keyboardAvoid: {
+    flex: 1,
+    width: '100%',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -732,6 +744,26 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 16,
   },
+  noteModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    width: '90%',
+    maxWidth: 400,
+  },
+  noteModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    color: '#1f2937',
+    textAlign: 'center',
+  },
+  noteModalSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#d1d5db',
@@ -741,8 +773,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   noteInput: {
-    minHeight: 80,
-    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 14,
+    fontSize: 16,
+    marginBottom: 20,
+    backgroundColor: '#fff',
   },
   modalButtons: {
     flexDirection: 'row',
