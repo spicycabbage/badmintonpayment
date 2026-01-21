@@ -1,0 +1,17 @@
+{
+  "short_name": "Eagle Payment",
+  "name": "Eagle Payment - Badminton Drop-in Tracker",
+  "description": "Track Cash and E-Transfer payments for badminton drop-in sessions",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "type": "image/png",
+      "sizes": "1024x1024"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "orientation": "portrait"
+}
