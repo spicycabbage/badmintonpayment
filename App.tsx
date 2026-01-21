@@ -363,54 +363,58 @@ export default function App() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="auto" />
-      
-      <View style={styles.header}>
-        <Text style={styles.title}>Badminton Drop-in Payments</Text>
-        <Text style={styles.subtitle}>
-          {participants.filter(p => p.paymentMethod).length} / {participants.length} paid
-        </Text>
-      </View>
-
-      <View style={styles.actionButtons}>
-        <TouchableOpacity
-          style={[styles.headerButton, styles.uploadButton]}
-          onPress={pickImage}
-          disabled={isProcessing}
-        >
-          <Text style={styles.headerButtonText}>
-            {isProcessing ? '⏳ Processing...' : '📸 Upload Screenshot'}
+    <View style={styles.outerContainer}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar style="auto" />
+        
+        <View style={styles.header}>
+          <Text style={styles.title}>Badminton Drop-in Payments</Text>
+          <Text style={styles.subtitle}>
+            {participants.filter(p => p.paymentMethod).length} / {participants.length} paid
           </Text>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          style={[styles.headerButton, styles.addButton]}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={styles.headerButtonText}>+ Add Manual</Text>
-        </TouchableOpacity>
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={[styles.headerButton, styles.uploadButton]}
+            onPress={pickImage}
+            disabled={isProcessing}
+          >
+            <Text style={styles.headerButtonText}>
+              {isProcessing ? '⏳ Processing...' : '📸 Upload Screenshot'}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.headerButton, styles.clearButton]}
-          onPress={clearAllParticipants}
-        >
-          <Text style={styles.headerButtonText}>Clear All</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={[styles.headerButton, styles.addButton]}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.headerButtonText}>+ Add Manual</Text>
+          </TouchableOpacity>
 
-      <FlatList
-        data={participants}
-        renderItem={renderParticipant}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No participants yet</Text>
-            <Text style={styles.emptySubtext}>Tap "Add Participant" to get started</Text>
-          </View>
-        }
-      />
+          <TouchableOpacity
+            style={[styles.headerButton, styles.clearButton]}
+            onPress={clearAllParticipants}
+          >
+            <Text style={styles.headerButtonText}>Clear All</Text>
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          data={participants}
+          renderItem={renderParticipant}
+          keyExtractor={item => item.id}
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={true}
+          nestedScrollEnabled={true}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No participants yet</Text>
+              <Text style={styles.emptySubtext}>Tap "Add Participant" to get started</Text>
+            </View>
+          }
+        />
 
       {/* Add Participant Modal */}
       <Modal
@@ -555,11 +559,18 @@ export default function App() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -612,6 +623,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 15,
+    paddingBottom: 30,
   },
   participantCard: {
     backgroundColor: '#fff',
