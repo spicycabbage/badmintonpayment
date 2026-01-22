@@ -698,47 +698,55 @@ export default function App() {
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoid}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.textInputModalContent}>
-              <Text style={styles.modalTitle}>Paste Name List</Text>
-              <Text style={styles.modalSubtitle}>
-                Enter or paste names (one per line)
-              </Text>
-              
-              <TextInput
-                style={styles.textListInput}
-                placeholder="Enter names (one per line)..."
-                value={textListInput}
-                onChangeText={setTextListInput}
-                multiline
-                autoFocus
-                textAlignVertical="top"
-                autoComplete="off"
-                autoCorrect={false}
-              />
+          <TouchableOpacity 
+            style={styles.modalOverlayTouchable}
+            activeOpacity={1}
+            onPress={() => {
+              setTextInputModalVisible(false);
+              setTextListInput('');
+            }}
+          >
+            <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+              <View style={styles.textInputModalContent}>
+                <Text style={styles.modalTitle}>Paste Name List</Text>
+                <Text style={styles.modalSubtitle}>
+                  Enter or paste names (one per line)
+                </Text>
+                
+                <TextInput
+                  style={styles.textListInput}
+                  placeholder="Enter names (one per line)..."
+                  value={textListInput}
+                  onChangeText={setTextListInput}
+                  multiline
+                  autoFocus
+                  textAlignVertical="top"
+                  autoComplete="off"
+                  autoCorrect={false}
+                />
 
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.cancelButton]}
-                  onPress={() => {
-                    setTextInputModalVisible(false);
-                    setTextListInput('');
-                  }}
-                >
-                  <Text style={styles.modalButtonText}>Cancel</Text>
-                </TouchableOpacity>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => {
+                      setTextInputModalVisible(false);
+                      setTextListInput('');
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.saveButton]}
-                  onPress={processTextList}
-                >
-                  <Text style={[styles.modalButtonText, styles.saveButtonText]}>Process</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.saveButton]}
+                    onPress={processTextList}
+                  >
+                    <Text style={[styles.modalButtonText, styles.saveButtonText]}>Process</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
       </Modal>
       </SafeAreaView>
@@ -1107,9 +1115,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
-    width: '90%',
-    maxWidth: 400,
-    maxHeight: '80%',
+    width: 320,
+    maxHeight: 500,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   textListInput: {
     borderWidth: 1,
