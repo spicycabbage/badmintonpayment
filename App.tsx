@@ -493,6 +493,8 @@ export default function App() {
               value={nameInput}
               onChangeText={setNameInput}
               autoFocus
+              autoComplete="off"
+              autoCorrect={false}
             />
 
             <View style={styles.modalButtons}>
@@ -527,6 +529,7 @@ export default function App() {
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoid}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
           <View style={styles.modalOverlay}>
             <View style={styles.noteModalContent}>
@@ -544,6 +547,8 @@ export default function App() {
                 autoFocus
                 returnKeyType="done"
                 blurOnSubmit={true}
+                autoComplete="off"
+                autoCorrect={false}
               />
 
               <View style={styles.modalButtons}>
@@ -670,6 +675,7 @@ export default function App() {
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoid}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
           <View style={styles.modalOverlay}>
             <View style={styles.textInputModalContent}>
@@ -686,6 +692,8 @@ export default function App() {
                 multiline
                 autoFocus
                 textAlignVertical="top"
+                autoComplete="off"
+                autoCorrect={false}
               />
 
               <View style={styles.modalButtons}>
@@ -909,6 +917,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 20,
   },
   modalContent: {
     backgroundColor: '#fff',
