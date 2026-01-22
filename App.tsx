@@ -38,6 +38,7 @@ export default function App() {
   const [clearAllModalVisible, setClearAllModalVisible] = useState(false);
   const [textInputModalVisible, setTextInputModalVisible] = useState(false);
   const [textListInput, setTextListInput] = useState('');
+  const [filter, setFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
 
   useEffect(() => {
     loadParticipants();
@@ -320,6 +321,15 @@ export default function App() {
     }
   };
 
+  const getFilteredParticipants = () => {
+    if (filter === 'paid') {
+      return participants.filter(p => p.paymentMethod !== null);
+    } else if (filter === 'unpaid') {
+      return participants.filter(p => p.paymentMethod === null);
+    }
+    return participants;
+  };
+
   const renderParticipant = ({ item }: { item: Participant }) => (
     <View style={styles.participantCard}>
       <View style={styles.participantRow}>
@@ -384,39 +394,68 @@ export default function App() {
 
         <View style={styles.actionButtons}>
           <TouchableOpacity
-            style={[styles.headerButton, styles.uploadButton]}
+            style={[styles.compactButton, styles.uploadButton]}
             onPress={pickImage}
             disabled={isProcessing}
           >
-            <Text style={styles.headerButtonText}>
-              {isProcessing ? '⏳ Processing...' : '📸 Image'}
+            <Text style={styles.compactButtonText}>
+              {isProcessing ? '⏳' : '📸'}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.headerButton, styles.textButton]}
+            style={[styles.compactButton, styles.textButton]}
             onPress={() => setTextInputModalVisible(true)}
           >
-            <Text style={styles.headerButtonText}>📋 Text</Text>
+            <Text style={styles.compactButtonText}>📋</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.headerButton, styles.addButton]}
+            style={[styles.compactButton, styles.addButton]}
             onPress={() => setModalVisible(true)}
           >
-            <Text style={styles.headerButtonText}>+ Manual</Text>
+            <Text style={styles.compactButtonText}>+</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.headerButton, styles.clearButton]}
+            style={[styles.compactButton, styles.clearButton]}
             onPress={clearAllParticipants}
           >
-            <Text style={styles.headerButtonText}>Clear</Text>
+            <Text style={styles.compactButtonText}>×</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.filterButtons}>
+          <TouchableOpacity
+            style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
+            onPress={() => setFilter('all')}
+          >
+            <Text style={[styles.filterButtonText, filter === 'all' && styles.filterButtonTextActive]}>
+              Show All
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.filterButton, filter === 'paid' && styles.filterButtonActive]}
+            onPress={() => setFilter('paid')}
+          >
+            <Text style={[styles.filterButtonText, filter === 'paid' && styles.filterButtonTextActive]}>
+              Paid
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.filterButton, filter === 'unpaid' && styles.filterButtonActive]}
+            onPress={() => setFilter('unpaid')}
+          >
+            <Text style={[styles.filterButtonText, filter === 'unpaid' && styles.filterButtonTextActive]}>
+              Not Paid
+            </Text>
           </TouchableOpacity>
         </View>
 
         <FlatList
-          data={participants}
+          data={getFilteredParticipants()}
           renderItem={renderParticipant}
           keyExtractor={item => item.id}
           style={{ flex: 1 }}
@@ -425,8 +464,14 @@ export default function App() {
           nestedScrollEnabled={true}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No participants yet</Text>
-              <Text style={styles.emptySubtext}>Tap "Add Participant" to get started</Text>
+              <Text style={styles.emptyText}>
+                {filter === 'paid' ? 'No paid participants' : 
+                 filter === 'unpaid' ? 'No unpaid participants' : 
+                 'No participants yet'}
+              </Text>
+              <Text style={styles.emptySubtext}>
+                {filter === 'all' ? 'Tap "+" to add participants' : 'Try a different filter'}
+              </Text>
             </View>
           }
         />
@@ -701,9 +746,21 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    padding: 15,
-    gap: 10,
-    flexWrap: 'wrap',
+    padding: 12,
+    paddingBottom: 8,
+    gap: 8,
+    justifyContent: 'space-between',
+  },
+  compactButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  compactButtonText: {
+    fontSize: 20,
   },
   headerButton: {
     flex: 1,
@@ -723,6 +780,33 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     backgroundColor: '#ef4444',
+  },
+  filterButtons: {
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    gap: 8,
+  },
+  filterButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+  },
+  filterButtonActive: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  filterButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  filterButtonTextActive: {
+    color: '#fff',
   },
   headerButtonText: {
     color: '#fff',
