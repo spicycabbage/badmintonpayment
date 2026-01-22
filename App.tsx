@@ -386,7 +386,7 @@ export default function App() {
         <StatusBar style="auto" />
         
         <View style={styles.header}>
-          <Text style={styles.title}>Badminton Drop-in Payments</Text>
+          <Text style={styles.title}>Badminton Drop-in</Text>
           <Text style={styles.subtitle}>
             {participants.filter(p => p.paymentMethod).length} / {participants.length} paid
           </Text>
