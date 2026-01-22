@@ -680,7 +680,7 @@ export default function App() {
               
               <TextInput
                 style={styles.textListInput}
-                placeholder="John Smith&#10;Jane Doe&#10;Mike Johnson&#10;..."
+                placeholder="Enter names (one per line)..."
                 value={textListInput}
                 onChangeText={setTextListInput}
                 multiline
