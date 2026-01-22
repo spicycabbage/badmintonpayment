@@ -35,6 +35,7 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
   const [parsedNames, setParsedNames] = useState<string[]>([]);
+  const [clearAllModalVisible, setClearAllModalVisible] = useState(false);
 
   useEffect(() => {
     loadParticipants();
@@ -296,21 +297,13 @@ export default function App() {
   };
 
   const clearAllParticipants = () => {
-    Alert.alert(
-      'Clear All',
-      'Are you sure you want to clear all participants?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear',
-          style: 'destructive',
-          onPress: () => {
-            setParticipants([]);
-            saveParticipants([]);
-          },
-        },
-      ]
-    );
+    setClearAllModalVisible(true);
+  };
+
+  const confirmClearAll = () => {
+    setParticipants([]);
+    saveParticipants([]);
+    setClearAllModalVisible(false);
   };
 
   const renderParticipant = ({ item }: { item: Participant }) => (
@@ -562,6 +555,39 @@ export default function App() {
                 <Text style={[styles.modalButtonText, styles.saveButtonText]}>
                   Add {parsedNames.length} Participants
                 </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Clear All Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={clearAllModalVisible}
+        onRequestClose={() => setClearAllModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModalContent}>
+            <Text style={styles.confirmModalTitle}>Clear All Participants?</Text>
+            <Text style={styles.confirmModalText}>
+              This will remove all participants and their payment records. This action cannot be undone.
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setClearAllModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.deleteButton]}
+                onPress={confirmClearAll}
+              >
+                <Text style={[styles.modalButtonText, styles.deleteButtonText]}>Clear All</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -839,5 +865,32 @@ const styles = StyleSheet.create({
     color: '#ef4444',
     fontWeight: 'bold',
     marginLeft: 10,
+  },
+  confirmModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+  },
+  confirmModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#ef4444',
+    textAlign: 'center',
+  },
+  confirmModalText: {
+    fontSize: 15,
+    color: '#4b5563',
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  deleteButton: {
+    backgroundColor: '#ef4444',
+  },
+  deleteButtonText: {
+    color: '#fff',
   },
 });
