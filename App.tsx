@@ -483,40 +483,53 @@ export default function App() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add Participant</Text>
-            
-            <TextInput
-              style={styles.input}
-              placeholder="Enter name"
-              value={nameInput}
-              onChangeText={setNameInput}
-              autoFocus
-              autoComplete="off"
-              autoCorrect={false}
-            />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoid}
+        >
+          <TouchableOpacity 
+            style={styles.modalOverlayTouchable}
+            activeOpacity={1}
+            onPress={() => setModalVisible(false)}
+          >
+            <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+              <View style={styles.compactModalContent}>
+                <Text style={styles.modalTitle}>Add Participant</Text>
+                
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter name"
+                  value={nameInput}
+                  onChangeText={setNameInput}
+                  autoFocus
+                  autoComplete="off"
+                  autoCorrect={false}
+                  returnKeyType="done"
+                  onSubmitEditing={addParticipant}
+                />
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setModalVisible(false);
-                  setNameInput('');
-                }}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => {
+                      setModalVisible(false);
+                      setNameInput('');
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={addParticipant}
-              >
-                <Text style={[styles.modalButtonText, styles.saveButtonText]}>Add</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.saveButton]}
+                    onPress={addParticipant}
+                  >
+                    <Text style={[styles.modalButtonText, styles.saveButtonText]}>Add</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* E-Transfer Note Modal */}
@@ -529,49 +542,59 @@ export default function App() {
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoid}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.noteModalContent}>
-              <Text style={styles.noteModalTitle}>E-Transfer Note</Text>
-              <Text style={styles.noteModalSubtitle}>
-                {selectedParticipant?.name}
-              </Text>
-              
-              <TextInput
-                style={styles.noteInput}
-                placeholder="E-Transfer sender name (optional)"
-                value={noteInput}
-                onChangeText={setNoteInput}
-                multiline={false}
-                autoFocus
-                returnKeyType="done"
-                blurOnSubmit={true}
-                autoComplete="off"
-                autoCorrect={false}
-              />
+          <TouchableOpacity 
+            style={styles.modalOverlayTouchable}
+            activeOpacity={1}
+            onPress={() => {
+              setNoteModalVisible(false);
+              setNoteInput('');
+              setSelectedParticipant(null);
+            }}
+          >
+            <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+              <View style={styles.compactModalContent}>
+                <Text style={styles.modalTitle}>E-Transfer Note</Text>
+                <Text style={styles.modalSubtitle}>
+                  {selectedParticipant?.name}
+                </Text>
+                
+                <TextInput
+                  style={styles.noteInput}
+                  placeholder="E-Transfer sender name (optional)"
+                  value={noteInput}
+                  onChangeText={setNoteInput}
+                  multiline={false}
+                  autoFocus
+                  returnKeyType="done"
+                  blurOnSubmit={true}
+                  autoComplete="off"
+                  autoCorrect={false}
+                  onSubmitEditing={saveNote}
+                />
 
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.cancelButton]}
-                  onPress={() => {
-                    setNoteModalVisible(false);
-                    setNoteInput('');
-                    setSelectedParticipant(null);
-                  }}
-                >
-                  <Text style={styles.modalButtonText}>Cancel</Text>
-                </TouchableOpacity>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => {
+                      setNoteModalVisible(false);
+                      setNoteInput('');
+                      setSelectedParticipant(null);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.saveButton]}
-                  onPress={saveNote}
-                >
-                  <Text style={[styles.modalButtonText, styles.saveButtonText]}>Save</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.saveButton]}
+                    onPress={saveNote}
+                  >
+                    <Text style={[styles.modalButtonText, styles.saveButtonText]}>Save</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
       </Modal>
 
@@ -912,6 +935,13 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
   },
+  modalOverlayTouchable: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -919,6 +949,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingBottom: 20,
+  },
+  compactModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    width: 320,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   modalContent: {
     backgroundColor: '#fff',
