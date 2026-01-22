@@ -36,6 +36,8 @@ export default function App() {
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
   const [parsedNames, setParsedNames] = useState<string[]>([]);
   const [clearAllModalVisible, setClearAllModalVisible] = useState(false);
+  const [textInputModalVisible, setTextInputModalVisible] = useState(false);
+  const [textListInput, setTextListInput] = useState('');
 
   useEffect(() => {
     loadParticipants();
@@ -306,6 +308,18 @@ export default function App() {
     setClearAllModalVisible(false);
   };
 
+  const processTextList = () => {
+    const names = parseNames(textListInput);
+    if (names.length > 0) {
+      setParsedNames(names);
+      setTextInputModalVisible(false);
+      setTextListInput('');
+      setReviewModalVisible(true);
+    } else {
+      Alert.alert('No names found', 'Please enter at least one name (one per line).');
+    }
+  };
+
   const renderParticipant = ({ item }: { item: Participant }) => (
     <View style={styles.participantCard}>
       <View style={styles.participantRow}>
@@ -375,22 +389,29 @@ export default function App() {
             disabled={isProcessing}
           >
             <Text style={styles.headerButtonText}>
-              {isProcessing ? '⏳ Processing...' : '📸 Upload Screenshot'}
+              {isProcessing ? '⏳ Processing...' : '📸 Image'}
             </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.headerButton, styles.textButton]}
+            onPress={() => setTextInputModalVisible(true)}
+          >
+            <Text style={styles.headerButtonText}>📋 Text</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.headerButton, styles.addButton]}
             onPress={() => setModalVisible(true)}
           >
-            <Text style={styles.headerButtonText}>+ Add Manual</Text>
+            <Text style={styles.headerButtonText}>+ Manual</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.headerButton, styles.clearButton]}
             onPress={clearAllParticipants}
           >
-            <Text style={styles.headerButtonText}>Clear All</Text>
+            <Text style={styles.headerButtonText}>Clear</Text>
           </TouchableOpacity>
         </View>
 
@@ -593,6 +614,57 @@ export default function App() {
           </View>
         </View>
       </Modal>
+
+      {/* Text List Input Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={textInputModalVisible}
+        onRequestClose={() => setTextInputModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoid}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.textInputModalContent}>
+              <Text style={styles.modalTitle}>Paste Name List</Text>
+              <Text style={styles.modalSubtitle}>
+                Enter or paste names (one per line)
+              </Text>
+              
+              <TextInput
+                style={styles.textListInput}
+                placeholder="John Smith&#10;Jane Doe&#10;Mike Johnson&#10;..."
+                value={textListInput}
+                onChangeText={setTextListInput}
+                multiline
+                autoFocus
+                textAlignVertical="top"
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setTextInputModalVisible(false);
+                    setTextListInput('');
+                  }}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.saveButton]}
+                  onPress={processTextList}
+                >
+                  <Text style={[styles.modalButtonText, styles.saveButtonText]}>Process</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
       </SafeAreaView>
     </View>
   );
@@ -642,6 +714,9 @@ const styles = StyleSheet.create({
   },
   uploadButton: {
     backgroundColor: '#8b5cf6',
+  },
+  textButton: {
+    backgroundColor: '#3b82f6',
   },
   addButton: {
     backgroundColor: '#10b981',
@@ -892,5 +967,25 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: '#fff',
+  },
+  textInputModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    width: '90%',
+    maxWidth: 400,
+    maxHeight: '80%',
+  },
+  textListInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 15,
+    marginBottom: 20,
+    minHeight: 200,
+    maxHeight: 300,
+    textAlignVertical: 'top',
+    backgroundColor: '#f9fafb',
   },
 });
