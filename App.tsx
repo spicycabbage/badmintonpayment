@@ -797,12 +797,6 @@ export default function App() {
                   )}
                 </ScrollView>
               </View>
-              <View style={styles.playerBox}>
-                <Text style={styles.playerBoxTitle}>Currently Playing</Text>
-                <ScrollView style={styles.playerList}>
-                  <Text style={styles.emptyPlayerText}>No active games</Text>
-                </ScrollView>
-              </View>
             </View>
           </View>
         )}
@@ -1578,12 +1572,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   courtsLeft: {
-    flex: 2,
+    flex: 5,
     gap: 12,
   },
   courtsRight: {
     flex: 1,
-    gap: 12,
   },
   courtBox: {
     flex: 1,
@@ -1650,17 +1643,17 @@ const styles = StyleSheet.create({
   },
   queueGroup: {
     backgroundColor: '#e5e7eb',
-    borderRadius: 6,
-    padding: 6,
+    borderRadius: 10,
+    padding: 14,
     borderWidth: 1,
     borderColor: '#9ca3af',
-    width: 150,
+    width: 240,
   },
   queueGroupHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   typeToggle: {
     flexDirection: 'row',
@@ -1669,9 +1662,9 @@ const styles = StyleSheet.create({
   },
   typeButtonBase: {
     flex: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -1691,7 +1684,7 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   typeButtonText: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#4b5563',
     fontWeight: '600',
   },
@@ -1702,21 +1695,21 @@ const styles = StyleSheet.create({
   playerSelectRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
-    gap: 4,
+    marginBottom: 6,
+    gap: 6,
   },
   playerLabel: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#4b5563',
     fontWeight: '500',
-    width: 25,
+    width: 30,
   },
   startGameButton: {
     backgroundColor: '#10b981',
-    padding: 6,
-    borderRadius: 4,
+    padding: 10,
+    borderRadius: 6,
     alignItems: 'center',
-    marginTop: 3,
+    marginTop: 4,
   },
   startGameButtonDisabled: {
     backgroundColor: '#9ca3af',
@@ -1724,7 +1717,7 @@ const styles = StyleSheet.create({
   },
   startGameButtonText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '600',
   },
   addQueueButton: {
@@ -1740,16 +1733,16 @@ const styles = StyleSheet.create({
   },
   playingGameCard: {
     backgroundColor: '#e5e7eb',
-    borderRadius: 6,
-    padding: 8,
+    borderRadius: 10,
+    padding: 14,
     borderWidth: 1,
     borderColor: '#9ca3af',
-    width: 150,
+    width: 240,
   },
   gameTypeIndicator: {
-    padding: 4,
-    borderRadius: 3,
-    marginBottom: 6,
+    padding: 6,
+    borderRadius: 4,
+    marginBottom: 8,
     alignItems: 'center',
   },
   competitiveIndicator: {
@@ -1759,43 +1752,43 @@ const styles = StyleSheet.create({
     backgroundColor: '#eab308',
   },
   gameTypeText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#fff',
   },
   playingPlayerName: {
-    fontSize: 13,
+    fontSize: 15,
     color: '#1f2937',
-    marginBottom: 3,
+    marginBottom: 4,
   },
   gameButtonsRow: {
     flexDirection: 'row',
-    gap: 6,
-    marginTop: 8,
+    gap: 8,
+    marginTop: 10,
   },
   completeGameButton: {
     flex: 1,
     backgroundColor: '#2563eb',
-    padding: 8,
-    borderRadius: 4,
+    padding: 10,
+    borderRadius: 6,
     alignItems: 'center',
   },
   completeGameButtonText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
   undoButton: {
     backgroundColor: '#6b7280',
-    width: 32,
-    height: 32,
-    borderRadius: 4,
+    width: 40,
+    height: 40,
+    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
   },
   undoButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
 });
