@@ -39,6 +39,7 @@ export default function App() {
   const [textInputModalVisible, setTextInputModalVisible] = useState(false);
   const [textListInput, setTextListInput] = useState('');
   const [filter, setFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
+  const [mode, setMode] = useState<'payments' | 'courts'>('payments');
 
   useEffect(() => {
     loadParticipants();
@@ -386,13 +387,28 @@ export default function App() {
         <StatusBar style="auto" />
         
         <View style={styles.header}>
-          <Text style={styles.title}>Badminton Drop-in</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>Badminton Drop-in</Text>
+            <TouchableOpacity
+              style={styles.modeToggle}
+              onPress={() => setMode(mode === 'payments' ? 'courts' : 'payments')}
+            >
+              <Text style={styles.modeToggleText}>
+                {mode === 'payments' ? '🎾 Courts' : '💰 Payments'}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.subtitle}>
-            {participants.filter(p => p.paymentMethod).length} / {participants.length} paid
+            {mode === 'payments' 
+              ? `${participants.filter(p => p.paymentMethod).length} / ${participants.length} paid`
+              : 'Court Assignment'
+            }
           </Text>
         </View>
 
-        <View style={styles.actionButtons}>
+        {mode === 'payments' ? (
+          <>
+            <View style={styles.actionButtons}>
           <TouchableOpacity
             style={[styles.compactButton, styles.uploadButton]}
             onPress={pickImage}
@@ -475,6 +491,14 @@ export default function App() {
             </View>
           }
         />
+          </>
+        ) : (
+          <View style={styles.courtsPlaceholder}>
+            <Text style={styles.courtsPlaceholderText}>🎾</Text>
+            <Text style={styles.courtsPlaceholderTitle}>Court Assignment</Text>
+            <Text style={styles.courtsPlaceholderSubtitle}>Coming soon</Text>
+          </View>
+        )}
 
       {/* Add Participant Modal */}
       <Modal
@@ -773,11 +797,29 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 10,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 5,
+  },
+  modeToggle: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  modeToggleText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: 16,
@@ -1134,5 +1176,25 @@ const styles = StyleSheet.create({
     maxHeight: 300,
     textAlignVertical: 'top',
     backgroundColor: '#f9fafb',
+  },
+  courtsPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  courtsPlaceholderText: {
+    fontSize: 60,
+    marginBottom: 20,
+  },
+  courtsPlaceholderTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  courtsPlaceholderSubtitle: {
+    fontSize: 16,
+    color: '#6b7280',
   },
 });
