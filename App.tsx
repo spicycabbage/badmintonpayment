@@ -488,11 +488,12 @@ export default function App() {
               : handlePayment(item.id, 'Cash')
             }
             accessibilityLabel={item.paymentMethod === 'Cash' ? '清除现金付款' : '现金付款'}
+            title={item.paymentMethod === 'Cash' ? '清除现金付款' : '现金付款'}
           >
             <Text style={[
               styles.buttonText,
               item.paymentMethod === 'Cash' && styles.selectedButtonText,
-            ]} title={item.paymentMethod === 'Cash' ? '清除现金付款' : '现金付款'}>
+            ]}>
               {item.paymentMethod === 'Cash' ? '✓' : '$'}
             </Text>
           </TouchableOpacity>
@@ -505,11 +506,12 @@ export default function App() {
             ]}
             onPress={() => handlePayment(item.id, 'E-Transfer')}
             accessibilityLabel="电子转账付款"
+            title="电子转账付款"
           >
             <Text style={[
               styles.buttonText,
               item.paymentMethod === 'E-Transfer' && styles.selectedButtonText,
-            ]} title="电子转账付款">
+            ]}>
               {item.paymentMethod === 'E-Transfer' ? '✓' : 'e'}
             </Text>
           </TouchableOpacity>
@@ -532,8 +534,9 @@ export default function App() {
                   style={styles.courtControlButton}
                   onPress={() => setNumCourts(Math.max(1, numCourts - 1))}
                   accessibilityLabel="减少球场数量"
+                  title="减少球场数量"
                 >
-                  <Text style={styles.courtControlButtonText} title="减少球场数量">-</Text>
+                  <Text style={styles.courtControlButtonText}>-</Text>
                 </TouchableOpacity>
                 <TextInput
                   style={styles.courtsInput}
@@ -553,8 +556,9 @@ export default function App() {
                   style={styles.courtControlButton}
                   onPress={() => setNumCourts(numCourts + 1)}
                   accessibilityLabel="增加球场数量"
+                  title="增加球场数量"
                 >
-                  <Text style={styles.courtControlButtonText} title="增加球场数量">+</Text>
+                  <Text style={styles.courtControlButtonText}>+</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -562,8 +566,9 @@ export default function App() {
               style={styles.modeToggle}
               onPress={() => setMode(mode === 'payments' ? 'courts' : 'payments')}
               accessibilityLabel={mode === 'payments' ? '切换到球场分配' : '切换到付款追踪'}
+              title={mode === 'payments' ? '切换到球场分配' : '切换到付款追踪'}
             >
-              <Text style={styles.modeToggleText} title={mode === 'payments' ? '切换到球场分配' : '切换到付款追踪'}>
+              <Text style={styles.modeToggleText}>
                 {mode === 'payments' ? 'Courts' : 'Payments'}
               </Text>
             </TouchableOpacity>
@@ -584,8 +589,9 @@ export default function App() {
             onPress={pickImage}
             disabled={isProcessing}
             accessibilityLabel="上传图片识别名单"
+            title="上传图片识别名单"
           >
-            <Text style={styles.compactButtonText} title="上传图片识别名单">
+            <Text style={styles.compactButtonText}>
               {isProcessing ? '⏳' : '📸'}
             </Text>
           </TouchableOpacity>
@@ -594,24 +600,27 @@ export default function App() {
             style={[styles.compactButton, styles.textButton]}
             onPress={() => setTextInputModalVisible(true)}
             accessibilityLabel="粘贴文本名单"
+            title="粘贴文本名单"
           >
-            <Text style={styles.compactButtonText} title="粘贴文本名单">📋</Text>
+            <Text style={styles.compactButtonText}>📋</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.compactButton, styles.addButton]}
             onPress={() => setModalVisible(true)}
             accessibilityLabel="手动添加参与者"
+            title="手动添加参与者"
           >
-            <Text style={styles.compactButtonText} title="手动添加参与者">+</Text>
+            <Text style={styles.compactButtonText}>+</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.compactButton, styles.clearButton]}
             onPress={clearAllParticipants}
             accessibilityLabel="清除所有参与者"
+            title="清除所有参与者"
           >
-            <Text style={styles.compactButtonText} title="清除所有参与者">×</Text>
+            <Text style={styles.compactButtonText}>×</Text>
           </TouchableOpacity>
         </View>
 
@@ -620,8 +629,9 @@ export default function App() {
             style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
             onPress={() => setFilter('all')}
             accessibilityLabel="显示所有"
+            title="显示所有"
           >
-            <Text style={[styles.filterButtonText, filter === 'all' && styles.filterButtonTextActive]} title="显示所有">
+            <Text style={[styles.filterButtonText, filter === 'all' && styles.filterButtonTextActive]}>
               Show All
             </Text>
           </TouchableOpacity>
@@ -630,8 +640,9 @@ export default function App() {
             style={[styles.filterButton, filter === 'paid' && styles.filterButtonActive]}
             onPress={() => setFilter('paid')}
             accessibilityLabel="显示已付款"
+            title="显示已付款"
           >
-            <Text style={[styles.filterButtonText, filter === 'paid' && styles.filterButtonTextActive]} title="显示已付款">
+            <Text style={[styles.filterButtonText, filter === 'paid' && styles.filterButtonTextActive]}>
               Paid
             </Text>
           </TouchableOpacity>
@@ -640,8 +651,9 @@ export default function App() {
             style={[styles.filterButton, filter === 'unpaid' && styles.filterButtonActive]}
             onPress={() => setFilter('unpaid')}
             accessibilityLabel="显示未付款"
+            title="显示未付款"
           >
-            <Text style={[styles.filterButtonText, filter === 'unpaid' && styles.filterButtonTextActive]} title="显示未付款">
+            <Text style={[styles.filterButtonText, filter === 'unpaid' && styles.filterButtonTextActive]}>
               Not Paid
             </Text>
           </TouchableOpacity>
@@ -700,15 +712,17 @@ export default function App() {
                               setUndoModalVisible(true);
                             }}
                             accessibilityLabel="撤销开始比赛"
+                            title="撤销开始比赛"
                           >
-                            <Text style={styles.undoButtonText} title="撤销开始比赛">↶</Text>
+                            <Text style={styles.undoButtonText}>↶</Text>
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={styles.completeGameButton}
                             onPress={() => completeGame(game.id)}
                             accessibilityLabel="完成比赛"
+                            title="完成比赛"
                           >
-                            <Text style={styles.completeGameButtonText} title="完成比赛">Complete</Text>
+                            <Text style={styles.completeGameButtonText}>Complete</Text>
                           </TouchableOpacity>
                         </View>
                       </View>
@@ -734,8 +748,9 @@ export default function App() {
                             ]}
                             onPress={() => updateQueueGroup(group.id, 'type', 'Competitive')}
                             accessibilityLabel="竞技模式"
+                            title="竞技模式"
                           >
-                            <Text style={[styles.typeButtonText, group.type === 'Competitive' && styles.typeButtonTextActive]} title="竞技模式">
+                            <Text style={[styles.typeButtonText, group.type === 'Competitive' && styles.typeButtonTextActive]}>
                               Competitive
                             </Text>
                           </TouchableOpacity>
@@ -746,8 +761,9 @@ export default function App() {
                             ]}
                             onPress={() => updateQueueGroup(group.id, 'type', 'Casual')}
                             accessibilityLabel="休闲模式"
+                            title="休闲模式"
                           >
-                            <Text style={[styles.typeButtonText, group.type === 'Casual' && styles.typeButtonTextActive]} title="休闲模式">
+                            <Text style={[styles.typeButtonText, group.type === 'Casual' && styles.typeButtonTextActive]}>
                               Casual
                             </Text>
                           </TouchableOpacity>
@@ -789,8 +805,9 @@ export default function App() {
                         onPress={() => startGame(group.id)}
                         disabled={!group.players.every(p => p !== null) || playingGames.length >= numCourts}
                         accessibilityLabel={playingGames.length >= numCourts ? '球场已满' : '开始比赛'}
+                        title={playingGames.length >= numCourts ? '球场已满' : '开始比赛'}
                       >
-                        <Text style={styles.startGameButtonText} title={playingGames.length >= numCourts ? '球场已满' : '开始比赛'}>
+                        <Text style={styles.startGameButtonText}>
                           {playingGames.length >= numCourts ? 'Courts Full' : 'Start Game'}
                         </Text>
                       </TouchableOpacity>
