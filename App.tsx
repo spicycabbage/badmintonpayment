@@ -744,10 +744,10 @@ export default function App() {
                             style={{
                               flex: 1,
                               minWidth: 0,
-                              padding: 8,
-                              borderRadius: 4,
+                              padding: 10,
+                              borderRadius: 5,
                               border: '1px solid #d1d5db',
-                              fontSize: 14,
+                              fontSize: 15,
                               backgroundColor: '#fff',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
@@ -1701,14 +1701,14 @@ const styles = StyleSheet.create({
   playerSelectRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
     gap: 6,
   },
   playerLabel: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#4b5563',
     fontWeight: '500',
-    width: 30,
+    width: 32,
   },
   startGameButton: {
     backgroundColor: '#10b981',
