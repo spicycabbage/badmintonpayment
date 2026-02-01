@@ -376,9 +376,11 @@ export default function App() {
     const currentGroup = queueGroups.find(g => g.id === currentGroupId);
     const currentSelection = currentGroup?.players[currentSlot];
     
-    return participants.filter(p => 
-      !selectedPlayers.includes(p.id) || p.id === currentSelection
-    );
+    return participants
+      .filter(p => 
+        !selectedPlayers.includes(p.id) || p.id === currentSelection
+      )
+      .sort((a, b) => cleanName(a.name).localeCompare(cleanName(b.name)));
   };
 
   const updateQueueGroup = (groupId: string, field: 'type' | 'player', value: any, playerIndex?: number) => {
@@ -744,10 +746,10 @@ export default function App() {
                             style={{
                               flex: 1,
                               minWidth: 0,
-                              padding: 10,
+                              padding: 12,
                               borderRadius: 5,
                               border: '1px solid #d1d5db',
-                              fontSize: 15,
+                              fontSize: 16,
                               backgroundColor: '#fff',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
