@@ -40,6 +40,22 @@ export default function App() {
   const [textListInput, setTextListInput] = useState('');
   const [filter, setFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
   const [mode, setMode] = useState<'payments' | 'courts'>('payments');
+  const [numCourts, setNumCourts] = useState(4);
+  
+  interface QueueGroup {
+    id: string;
+    type: 'Competitive' | 'Casual';
+    players: (string | null)[];
+    originalQueueIndex?: number;
+  }
+  
+  const [queueGroups, setQueueGroups] = useState<QueueGroup[]>([
+    { id: '1', type: 'Competitive', players: [null, null, null, null] }
+  ]);
+  
+  const [playingGames, setPlayingGames] = useState<QueueGroup[]>([]);
+  const [undoModalVisible, setUndoModalVisible] = useState(false);
+  const [selectedGameToUndo, setSelectedGameToUndo] = useState<string | null>(null);
 
   useEffect(() => {
     loadParticipants();
@@ -126,10 +142,19 @@ export default function App() {
                !lowerLine.includes('@') &&
                line.length < 50 && // Skip very long lines
                /[a-zA-Z]/.test(line); // Must contain at least one letter
+      })
+      .map(line => {
+        // Remove leading numbers and dots/dashes (e.g., "1. John" -> "John", "12 - Jane" -> "Jane")
+        return line.replace(/^\d+[\.\-\s)]+/, '').trim();
       });
 
     // Remove duplicates
     return [...new Set(lines)];
+  };
+
+  const cleanName = (name: string): string => {
+    // Remove leading numbers and punctuation from any name
+    return name.replace(/^\d+[\.\-\s)]+/, '').trim();
   };
 
   const pickImage = async () => {
@@ -331,6 +356,114 @@ export default function App() {
     return participants;
   };
 
+  const getSelectedPlayers = (): string[] => {
+    const selected: string[] = [];
+    queueGroups.forEach(group => {
+      group.players.forEach(playerId => {
+        if (playerId) selected.push(playerId);
+      });
+    });
+    playingGames.forEach(game => {
+      game.players.forEach(playerId => {
+        if (playerId) selected.push(playerId);
+      });
+    });
+    return selected;
+  };
+
+  const getAvailablePlayers = (currentGroupId: string, currentSlot: number) => {
+    const selectedPlayers = getSelectedPlayers();
+    const currentGroup = queueGroups.find(g => g.id === currentGroupId);
+    const currentSelection = currentGroup?.players[currentSlot];
+    
+    return participants.filter(p => 
+      !selectedPlayers.includes(p.id) || p.id === currentSelection
+    );
+  };
+
+  const updateQueueGroup = (groupId: string, field: 'type' | 'player', value: any, playerIndex?: number) => {
+    setQueueGroups(groups => {
+      const updatedGroups = groups.map(group => {
+        if (group.id === groupId) {
+          if (field === 'type') {
+            return { ...group, type: value };
+          } else if (field === 'player' && playerIndex !== undefined) {
+            const newPlayers = [...group.players];
+            newPlayers[playerIndex] = value;
+            return { ...group, players: newPlayers };
+          }
+        }
+        return group;
+      });
+
+      // Check if we need to add a new empty group
+      if (field === 'player' && value) {
+        const hasEmptyGroup = updatedGroups.some(group => 
+          group.players.every(p => p === null)
+        );
+        
+        if (!hasEmptyGroup) {
+          const newId = String(Date.now());
+          updatedGroups.push({ id: newId, type: 'Competitive', players: [null, null, null, null] });
+        }
+      }
+
+      return updatedGroups;
+    });
+  };
+
+  const addQueueGroup = () => {
+    const newId = String(Date.now());
+    setQueueGroups([...queueGroups, { id: newId, type: 'Competitive', players: [null, null, null, null] }]);
+  };
+
+  const removeQueueGroup = (groupId: string) => {
+    setQueueGroups(groups => groups.filter(g => g.id !== groupId));
+  };
+
+  const startGame = (groupId: string) => {
+    // Check if courts are available
+    if (playingGames.length >= numCourts) {
+      return; // Can't start game, all courts are full
+    }
+    
+    const groupIndex = queueGroups.findIndex(g => g.id === groupId);
+    const group = queueGroups[groupIndex];
+    if (group) {
+      // Save the original queue index before moving
+      const groupWithIndex = { ...group, originalQueueIndex: groupIndex };
+      // Move group to playing games
+      setPlayingGames([...playingGames, groupWithIndex]);
+      // Remove from queue
+      setQueueGroups(groups => groups.filter(g => g.id !== groupId));
+    }
+  };
+
+  const completeGame = (gameId: string) => {
+    // Remove from playing games (players automatically return to available pool)
+    setPlayingGames(games => games.filter(g => g.id !== gameId));
+  };
+
+  const undoStartGame = () => {
+    if (!selectedGameToUndo) return;
+    
+    const game = playingGames.find(g => g.id === selectedGameToUndo);
+    if (game) {
+      // Remove from playing games
+      setPlayingGames(games => games.filter(g => g.id !== selectedGameToUndo));
+      
+      // Insert back into queue at original position
+      const insertIndex = game.originalQueueIndex !== undefined ? game.originalQueueIndex : queueGroups.length;
+      const newQueue = [...queueGroups];
+      const { originalQueueIndex, ...gameWithoutIndex } = game;
+      newQueue.splice(insertIndex, 0, gameWithoutIndex);
+      setQueueGroups(newQueue);
+    }
+    
+    setUndoModalVisible(false);
+    setSelectedGameToUndo(null);
+  };
+
   const renderParticipant = ({ item }: { item: Participant }) => (
     <View style={styles.participantCard}>
       <View style={styles.participantRow}>
@@ -383,12 +516,42 @@ export default function App() {
 
   return (
     <View style={styles.outerContainer}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, mode === 'courts' && styles.containerWide]}>
         <StatusBar style="auto" />
         
         <View style={styles.header}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>Badminton Drop-in</Text>
+            {mode === 'courts' && (
+              <View style={styles.courtsControlInline}>
+                <TouchableOpacity
+                  style={styles.courtControlButton}
+                  onPress={() => setNumCourts(Math.max(1, numCourts - 1))}
+                >
+                  <Text style={styles.courtControlButtonText}>-</Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.courtsInput}
+                  value={String(numCourts)}
+                  onChangeText={(text) => {
+                    const num = parseInt(text);
+                    if (!isNaN(num) && num > 0) {
+                      setNumCourts(num);
+                    } else if (text === '') {
+                      setNumCourts(1);
+                    }
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+                <TouchableOpacity
+                  style={styles.courtControlButton}
+                  onPress={() => setNumCourts(numCourts + 1)}
+                >
+                  <Text style={styles.courtControlButtonText}>+</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             <TouchableOpacity
               style={styles.modeToggle}
               onPress={() => setMode(mode === 'payments' ? 'courts' : 'payments')}
@@ -493,10 +656,154 @@ export default function App() {
         />
           </>
         ) : (
-          <View style={styles.courtsPlaceholder}>
-            <Text style={styles.courtsPlaceholderText}>🎾</Text>
-            <Text style={styles.courtsPlaceholderTitle}>Court Assignment</Text>
-            <Text style={styles.courtsPlaceholderSubtitle}>Coming soon</Text>
+          <View style={styles.courtsLayout}>
+            <View style={styles.courtsLeft}>
+              <View style={styles.courtBox}>
+                <Text style={styles.courtBoxTitle}>Playing</Text>
+                <ScrollView style={styles.queueContainer}>
+                  <View style={styles.queueGroupsWrapper}>
+                    {playingGames.map((game) => (
+                      <View key={game.id} style={styles.playingGameCard}>
+                        <View style={[
+                          styles.gameTypeIndicator,
+                          game.type === 'Competitive' ? styles.competitiveIndicator : styles.casualIndicator
+                        ]}>
+                          <Text style={styles.gameTypeText}>{game.type}</Text>
+                        </View>
+                        {game.players.map((playerId, index) => {
+                          const player = participants.find(p => p.id === playerId);
+                          return player ? (
+                            <Text key={index} style={styles.playingPlayerName}>
+                              {cleanName(player.name)}
+                            </Text>
+                          ) : null;
+                        })}
+                        <View style={styles.gameButtonsRow}>
+                          <TouchableOpacity
+                            style={styles.undoButton}
+                            onPress={() => {
+                              setSelectedGameToUndo(game.id);
+                              setUndoModalVisible(true);
+                            }}
+                          >
+                            <Text style={styles.undoButtonText}>↶</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.completeGameButton}
+                            onPress={() => completeGame(game.id)}
+                          >
+                            <Text style={styles.completeGameButtonText}>Complete</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))}
+                    {playingGames.length === 0 && (
+                      <Text style={styles.emptyPlayerText}>No active games</Text>
+                    )}
+                  </View>
+                </ScrollView>
+              </View>
+              <View style={styles.courtBox}>
+                <Text style={styles.courtBoxTitle}>In queue</Text>
+                <ScrollView style={styles.queueContainer}>
+                  <View style={styles.queueGroupsWrapper}>
+                    {queueGroups.map((group) => (
+                      <View key={group.id} style={styles.queueGroup}>
+                      <View style={styles.queueGroupHeader}>
+                        <View style={styles.typeToggle}>
+                          <TouchableOpacity
+                            style={[
+                              styles.typeButtonBase,
+                              group.type === 'Competitive' ? styles.typeButtonCompetitive : styles.typeButtonInactive
+                            ]}
+                            onPress={() => updateQueueGroup(group.id, 'type', 'Competitive')}
+                          >
+                            <Text style={[styles.typeButtonText, group.type === 'Competitive' && styles.typeButtonTextActive]}>
+                              Competitive
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[
+                              styles.typeButtonBase,
+                              group.type === 'Casual' ? styles.typeButtonCasual : styles.typeButtonInactive
+                            ]}
+                            onPress={() => updateQueueGroup(group.id, 'type', 'Casual')}
+                          >
+                            <Text style={[styles.typeButtonText, group.type === 'Casual' && styles.typeButtonTextActive]}>
+                              Casual
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                      {group.players.map((playerId, index) => (
+                        <View key={index} style={styles.playerSelectRow}>
+                          <Text style={styles.playerLabel}>P{index + 1}:</Text>
+                          <select
+                            value={playerId || ''}
+                            onChange={(e) => updateQueueGroup(group.id, 'player', e.target.value || null, index)}
+                            style={{
+                              flex: 1,
+                              minWidth: 0,
+                              padding: 4,
+                              borderRadius: 3,
+                              border: '1px solid #d1d5db',
+                              fontSize: 11,
+                              backgroundColor: '#fff',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            <option value=""></option>
+                            {getAvailablePlayers(group.id, index).map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {cleanName(p.name)}
+                              </option>
+                            ))}
+                          </select>
+                        </View>
+                      ))}
+                      <TouchableOpacity 
+                        style={[
+                          styles.startGameButton,
+                          (!group.players.every(p => p !== null) || playingGames.length >= numCourts) && styles.startGameButtonDisabled
+                        ]}
+                        onPress={() => startGame(group.id)}
+                        disabled={!group.players.every(p => p !== null) || playingGames.length >= numCourts}
+                      >
+                        <Text style={styles.startGameButtonText}>
+                          {playingGames.length >= numCourts ? 'Courts Full' : 'Start Game'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  </View>
+                </ScrollView>
+              </View>
+            </View>
+            <View style={styles.courtsRight}>
+              <View style={styles.playerBox}>
+                <Text style={styles.playerBoxTitle}>Available Players</Text>
+                <ScrollView style={styles.playerList}>
+                  {participants.filter(p => !getSelectedPlayers().includes(p.id)).map((participant) => (
+                    <View key={participant.id} style={styles.playerItem}>
+                      <Text style={styles.playerName}>{cleanName(participant.name)}</Text>
+                    </View>
+                  ))}
+                  {participants.filter(p => !getSelectedPlayers().includes(p.id)).length === 0 && (
+                    <Text style={styles.emptyPlayerText}>
+                      {participants.length === 0 ? 'No players yet' : 'All players assigned'}
+                    </Text>
+                  )}
+                </ScrollView>
+              </View>
+              <View style={styles.playerBox}>
+                <Text style={styles.playerBoxTitle}>Currently Playing</Text>
+                <ScrollView style={styles.playerList}>
+                  <Text style={styles.emptyPlayerText}>No active games</Text>
+                </ScrollView>
+              </View>
+            </View>
           </View>
         )}
 
@@ -773,6 +1080,40 @@ export default function App() {
           </TouchableOpacity>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Undo Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={undoModalVisible}
+        onRequestClose={() => setUndoModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModalContent}>
+            <Text style={styles.confirmModalTitle}>Undo Start Game?</Text>
+            <Text style={styles.confirmModalText}>
+              This will move the game back to the queue at its original position.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setUndoModalVisible(false);
+                  setSelectedGameToUndo(null);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={undoStartGame}
+              >
+                <Text style={[styles.modalButtonText, styles.saveButtonText]}>Undo</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       </SafeAreaView>
     </View>
   );
@@ -792,6 +1133,9 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
+  containerWide: {
+    maxWidth: '100%',
+  },
   header: {
     backgroundColor: '#2563eb',
     padding: 20,
@@ -803,6 +1147,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 5,
   },
+  courtsControlInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    position: 'absolute',
+    left: '50%',
+    transform: [{ translateX: -75 }],
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -810,20 +1162,62 @@ const styles = StyleSheet.create({
   },
   modeToggle: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   modeToggleText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
   },
   subtitle: {
     fontSize: 16,
     color: '#dbeafe',
+  },
+  courtsControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  courtsControlLabel: {
+    fontSize: 15,
+    color: '#fff',
+    fontWeight: '500',
+  },
+  courtsControlButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  courtControlButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  courtControlButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  courtsInput: {
+    backgroundColor: '#fff',
+    width: 50,
+    height: 36,
+    borderRadius: 8,
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -1177,24 +1571,231 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     backgroundColor: '#f9fafb',
   },
-  courtsPlaceholder: {
+  courtsLayout: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
+    flexDirection: 'row',
+    padding: 12,
+    gap: 12,
   },
-  courtsPlaceholderText: {
-    fontSize: 60,
-    marginBottom: 20,
+  courtsLeft: {
+    flex: 2,
+    gap: 12,
   },
-  courtsPlaceholderTitle: {
-    fontSize: 22,
+  courtsRight: {
+    flex: 1,
+    gap: 12,
+  },
+  courtBox: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  courtBoxTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#1f2937',
+    marginBottom: 10,
+  },
+  playerBox: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  playerBoxTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 10,
+  },
+  playerList: {
+    flex: 1,
+  },
+  playerItem: {
+    backgroundColor: '#f9fafb',
+    padding: 10,
+    borderRadius: 8,
     marginBottom: 8,
   },
-  courtsPlaceholderSubtitle: {
-    fontSize: 16,
-    color: '#6b7280',
+  playerName: {
+    fontSize: 15,
+    color: '#1f2937',
+  },
+  emptyPlayerText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  queueContainer: {
+    flex: 1,
+  },
+  queueGroupsWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  queueGroup: {
+    backgroundColor: '#e5e7eb',
+    borderRadius: 6,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: '#9ca3af',
+    width: 150,
+  },
+  queueGroupHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  typeToggle: {
+    flexDirection: 'row',
+    gap: 4,
+    flex: 1,
+  },
+  typeButtonBase: {
+    flex: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 4,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  typeButtonCompetitive: {
+    backgroundColor: '#ef4444',
+    borderColor: '#ef4444',
+  },
+  typeButtonCasual: {
+    backgroundColor: '#eab308',
+    borderColor: '#eab308',
+  },
+  typeButtonInactive: {
+    backgroundColor: '#d1d5db',
+    borderColor: '#9ca3af',
+  },
+  typeButtonSelected: {
+    opacity: 1,
+  },
+  typeButtonText: {
+    fontSize: 11,
+    color: '#4b5563',
+    fontWeight: '600',
+  },
+  typeButtonTextActive: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  playerSelectRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    gap: 4,
+  },
+  playerLabel: {
+    fontSize: 11,
+    color: '#4b5563',
+    fontWeight: '500',
+    width: 25,
+  },
+  startGameButton: {
+    backgroundColor: '#10b981',
+    padding: 6,
+    borderRadius: 4,
+    alignItems: 'center',
+    marginTop: 3,
+  },
+  startGameButtonDisabled: {
+    backgroundColor: '#9ca3af',
+    opacity: 0.5,
+  },
+  startGameButtonText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  addQueueButton: {
+    backgroundColor: '#2563eb',
+    padding: 10,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  addQueueButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  playingGameCard: {
+    backgroundColor: '#e5e7eb',
+    borderRadius: 6,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#9ca3af',
+    width: 150,
+  },
+  gameTypeIndicator: {
+    padding: 4,
+    borderRadius: 3,
+    marginBottom: 6,
+    alignItems: 'center',
+  },
+  competitiveIndicator: {
+    backgroundColor: '#ef4444',
+  },
+  casualIndicator: {
+    backgroundColor: '#eab308',
+  },
+  gameTypeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  playingPlayerName: {
+    fontSize: 13,
+    color: '#1f2937',
+    marginBottom: 3,
+  },
+  gameButtonsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 8,
+  },
+  completeGameButton: {
+    flex: 1,
+    backgroundColor: '#2563eb',
+    padding: 8,
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  completeGameButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  undoButton: {
+    backgroundColor: '#6b7280',
+    width: 32,
+    height: 32,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  undoButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
