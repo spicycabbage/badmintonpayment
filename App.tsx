@@ -658,7 +658,7 @@ export default function App() {
         ) : (
           <View style={styles.courtsLayout}>
             <View style={styles.courtsLeft}>
-              <View style={styles.courtBox}>
+              <View style={[styles.courtBox, styles.playingContainer]}>
                 <Text style={styles.courtBoxTitle}>Playing</Text>
                 <ScrollView style={styles.queueContainer}>
                   <View style={styles.queueGroupsWrapper}>
@@ -703,7 +703,7 @@ export default function App() {
                   </View>
                 </ScrollView>
               </View>
-              <View style={styles.courtBox}>
+              <View style={[styles.courtBox, styles.inQueueContainer]}>
                 <Text style={styles.courtBoxTitle}>In queue</Text>
                 <ScrollView style={styles.queueContainer}>
                   <View style={styles.queueGroupsWrapper}>
@@ -744,10 +744,10 @@ export default function App() {
                             style={{
                               flex: 1,
                               minWidth: 0,
-                              padding: 4,
-                              borderRadius: 3,
+                              padding: 8,
+                              borderRadius: 4,
                               border: '1px solid #d1d5db',
-                              fontSize: 11,
+                              fontSize: 14,
                               backgroundColor: '#fff',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
@@ -1572,11 +1572,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   courtsLeft: {
-    flex: 5,
+    flex: 7,
     gap: 12,
   },
   courtsRight: {
-    flex: 1,
+    flex: 0.85,
   },
   courtBox: {
     flex: 1,
@@ -1588,6 +1588,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  playingContainer: {
+    flex: 0.8,
+  },
+  inQueueContainer: {
+    flex: 1.2,
   },
   courtBoxTitle: {
     fontSize: 18,
@@ -1647,7 +1653,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: '#9ca3af',
-    width: 240,
+    width: 200,
   },
   queueGroupHeader: {
     flexDirection: 'row',
@@ -1695,11 +1701,11 @@ const styles = StyleSheet.create({
   playerSelectRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
     gap: 6,
   },
   playerLabel: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#4b5563',
     fontWeight: '500',
     width: 30,
@@ -1737,7 +1743,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: '#9ca3af',
-    width: 240,
+    width: 200,
   },
   gameTypeIndicator: {
     padding: 6,
