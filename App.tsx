@@ -1772,6 +1772,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1f2937',
     marginBottom: 4,
+    textAlign: 'center',
   },
   gameButtonsRow: {
     flexDirection: 'row',
