@@ -394,7 +394,7 @@ export default function App() {
               onPress={() => setMode(mode === 'payments' ? 'courts' : 'payments')}
             >
               <Text style={styles.modeToggleText}>
-                {mode === 'payments' ? '🎾 Courts' : '💰 Payments'}
+                {mode === 'payments' ? 'Courts' : 'Payments'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -810,15 +810,15 @@ const styles = StyleSheet.create({
   },
   modeToggle: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   modeToggleText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
   },
   subtitle: {
