@@ -785,11 +785,15 @@ export default function App() {
               <View style={styles.playerBox}>
                 <Text style={styles.playerBoxTitle}>Available Players</Text>
                 <ScrollView style={styles.playerList}>
-                  {participants.filter(p => !getSelectedPlayers().includes(p.id)).map((participant) => (
-                    <View key={participant.id} style={styles.playerItem}>
-                      <Text style={styles.playerName}>{cleanName(participant.name)}</Text>
-                    </View>
-                  ))}
+                  {participants
+                    .filter(p => !getSelectedPlayers().includes(p.id))
+                    .sort((a, b) => cleanName(a.name).localeCompare(cleanName(b.name)))
+                    .map((participant) => (
+                      <View key={participant.id} style={styles.playerItem}>
+                        <Text style={styles.playerName}>{cleanName(participant.name)}</Text>
+                      </View>
+                    ))
+                  }
                   {participants.filter(p => !getSelectedPlayers().includes(p.id)).length === 0 && (
                     <Text style={styles.emptyPlayerText}>
                       {participants.length === 0 ? 'No players yet' : 'All players assigned'}
@@ -1576,7 +1580,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   courtsRight: {
-    flex: 0.85,
+    flex: 1,
   },
   courtBox: {
     flex: 1,
