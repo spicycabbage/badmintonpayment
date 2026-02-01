@@ -1653,7 +1653,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: '#9ca3af',
-    width: 200,
+    width: 230,
   },
   queueGroupHeader: {
     flexDirection: 'row',
@@ -1743,7 +1743,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: '#9ca3af',
-    width: 200,
+    width: 230,
   },
   gameTypeIndicator: {
     padding: 6,
