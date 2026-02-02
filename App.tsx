@@ -15,8 +15,8 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
+import { supabase } from './supabaseClient';
 
 interface Participant {
   id: string;
@@ -59,24 +59,90 @@ export default function App() {
 
   useEffect(() => {
     loadParticipants();
+    
+    // Subscribe to real-time changes
+    const subscription = supabase
+      .channel('participants_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'participants' }, 
+        () => {
+          loadParticipants();
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadParticipants = async () => {
     try {
-      const stored = await AsyncStorage.getItem('participants');
-      if (stored) {
-        setParticipants(JSON.parse(stored));
+      const { data, error } = await supabase
+        .from('participants')
+        .select('*')
+        .order('created_at', { ascending: true });
+      
+      if (error) throw error;
+      
+      if (data) {
+        const formatted = data.map(p => ({
+          id: p.id,
+          name: p.name,
+          paymentMethod: p.payment_method as 'Cash' | 'E-Transfer' | null,
+          note: p.note || undefined
+        }));
+        setParticipants(formatted);
       }
     } catch (error) {
       console.error('Error loading participants:', error);
+      Alert.alert('Error', 'Failed to load participants from database');
     }
   };
 
-  const saveParticipants = async (data: Participant[]) => {
+  const saveParticipant = async (participant: Participant) => {
     try {
-      await AsyncStorage.setItem('participants', JSON.stringify(data));
+      const { error } = await supabase
+        .from('participants')
+        .upsert({
+          id: participant.id,
+          name: participant.name,
+          payment_method: participant.paymentMethod,
+          note: participant.note || null
+        });
+      
+      if (error) throw error;
     } catch (error) {
-      console.error('Error saving participants:', error);
+      console.error('Error saving participant:', error);
+      Alert.alert('Error', 'Failed to save to database');
+    }
+  };
+
+  const deleteParticipant = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('participants')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting participant:', error);
+      Alert.alert('Error', 'Failed to delete from database');
+    }
+  };
+
+  const deleteAllParticipants = async () => {
+    try {
+      const { error } = await supabase
+        .from('participants')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting all participants:', error);
+      Alert.alert('Error', 'Failed to clear database');
     }
   };
 
@@ -247,16 +313,18 @@ export default function App() {
     }
   };
 
-  const addParsedParticipants = () => {
+  const addParsedParticipants = async () => {
     const newParticipants = parsedNames.map(name => ({
-      id: `${Date.now()}-${Math.random()}`,
+      id: crypto.randomUUID(),
       name: name,
       paymentMethod: null as null,
     }));
     
-    const updated = [...participants, ...newParticipants];
-    setParticipants(updated);
-    saveParticipants(updated);
+    // Save to database
+    for (const participant of newParticipants) {
+      await saveParticipant(participant);
+    }
+    
     setReviewModalVisible(false);
     setParsedNames([]);
   };
@@ -265,16 +333,14 @@ export default function App() {
     setParsedNames(prev => prev.filter((_, i) => i !== index));
   };
 
-  const addParticipant = () => {
+  const addParticipant = async () => {
     if (nameInput.trim()) {
       const newParticipant: Participant = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         name: nameInput.trim(),
         paymentMethod: null,
       };
-      const updated = [...participants, newParticipant];
-      setParticipants(updated);
-      saveParticipants(updated);
+      await saveParticipant(newParticipant);
       setNameInput('');
       setModalVisible(false);
     }
@@ -295,19 +361,20 @@ export default function App() {
     }
   };
 
-  const updatePaymentMethod = (participantId: string, method: 'Cash' | 'E-Transfer', note?: string) => {
-    const updated = participants.map(p =>
-      p.id === participantId
-        ? { ...p, paymentMethod: method, note: note !== undefined ? note : p.note }
-        : p
-    );
-    setParticipants(updated);
-    saveParticipants(updated);
+  const updatePaymentMethod = async (participantId: string, method: 'Cash' | 'E-Transfer', note?: string) => {
+    const participant = participants.find(p => p.id === participantId);
+    if (participant) {
+      const updated = {
+        ...participant,
+        paymentMethod: method,
+        note: note !== undefined ? note : participant.note
+      };
+      await saveParticipant(updated);
+    }
   };
 
   const saveNote = () => {
     if (selectedParticipant) {
-      // Save the note (can be empty string to clear it)
       updatePaymentMethod(selectedParticipant.id, 'E-Transfer', noteInput.trim());
       setNoteModalVisible(false);
       setSelectedParticipant(null);
@@ -315,23 +382,24 @@ export default function App() {
     }
   };
 
-  const clearPayment = (participantId: string) => {
-    const updated = participants.map(p =>
-      p.id === participantId
-        ? { ...p, paymentMethod: null, note: '' }
-        : p
-    );
-    setParticipants(updated);
-    saveParticipants(updated);
+  const clearPayment = async (participantId: string) => {
+    const participant = participants.find(p => p.id === participantId);
+    if (participant) {
+      const updated = {
+        ...participant,
+        paymentMethod: null,
+        note: ''
+      };
+      await saveParticipant(updated);
+    }
   };
 
   const clearAllParticipants = () => {
     setClearAllModalVisible(true);
   };
 
-  const confirmClearAll = () => {
-    setParticipants([]);
-    saveParticipants([]);
+  const confirmClearAll = async () => {
+    await deleteAllParticipants();
     setClearAllModalVisible(false);
   };
 
