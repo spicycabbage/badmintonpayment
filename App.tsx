@@ -39,8 +39,11 @@ export default function App() {
   const [textInputModalVisible, setTextInputModalVisible] = useState(false);
   const [textListInput, setTextListInput] = useState('');
   const [filter, setFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
-  const [mode, setMode] = useState<'payments' | 'courts'>('payments');
+  const [mode, setMode] = useState<'payments' | 'courts'>('courts');
   const [numCourts, setNumCourts] = useState(4);
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [isPaymentUnlocked, setIsPaymentUnlocked] = useState(false);
   
   interface QueueGroup {
     id: string;
@@ -451,6 +454,28 @@ export default function App() {
     }
   };
 
+  const handleModeToggle = () => {
+    if (mode === 'courts') {
+      // Trying to switch to payments - ask for password
+      setPasswordModalVisible(true);
+    } else {
+      // Switching back to courts - no password needed
+      setMode('courts');
+    }
+  };
+
+  const handlePasswordSubmit = () => {
+    if (passwordInput === '2000') {
+      setIsPaymentUnlocked(true);
+      setMode('payments');
+      setPasswordModalVisible(false);
+      setPasswordInput('');
+    } else {
+      Alert.alert('Incorrect Password', 'Please try again.');
+      setPasswordInput('');
+    }
+  };
+
   const getFilteredParticipants = () => {
     if (filter === 'paid') {
       return participants.filter(p => p.paymentMethod !== null);
@@ -660,7 +685,7 @@ export default function App() {
             )}
             <TouchableOpacity
               style={styles.modeToggle}
-              onPress={() => setMode(mode === 'payments' ? 'courts' : 'payments')}
+              onPress={handleModeToggle}
             >
               <Text style={styles.modeToggleText}>
                 {mode === 'payments' ? 'Courts' : 'Payments'}
@@ -1117,6 +1142,55 @@ export default function App() {
                 onPress={confirmClearAll}
               >
                 <Text style={[styles.modalButtonText, styles.deleteButtonText]}>Clear All</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Password Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={passwordModalVisible}
+        onRequestClose={() => {
+          setPasswordModalVisible(false);
+          setPasswordInput('');
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModalContent}>
+            <Text style={styles.confirmModalTitle}>Enter Password</Text>
+            <Text style={styles.confirmModalText}>
+              Enter password to access payment tracking
+            </Text>
+
+            <TextInput
+              style={styles.passwordInput}
+              value={passwordInput}
+              onChangeText={setPasswordInput}
+              placeholder="Password"
+              secureTextEntry
+              keyboardType="number-pad"
+              autoFocus
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setPasswordModalVisible(false);
+                  setPasswordInput('');
+                }}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={handlePasswordSubmit}
+              >
+                <Text style={[styles.modalButtonText, styles.confirmButtonText]}>Submit</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1644,6 +1718,21 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  passwordInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  confirmButton: {
+    backgroundColor: '#3b82f6',
+  },
+  confirmButtonText: {
+    color: '#fff',
   },
   deleteButton: {
     backgroundColor: '#ef4444',
