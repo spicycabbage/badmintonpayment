@@ -431,6 +431,7 @@ export default function App() {
 
   const confirmClearAll = async () => {
     await deleteAllParticipants();
+    setParticipants([]); // Clear local state immediately
     setClearAllModalVisible(false);
   };
 
