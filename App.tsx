@@ -137,17 +137,27 @@ export default function App() {
       // Get all participant IDs
       const ids = participants.map(p => p.id);
       
-      if (ids.length === 0) return;
+      if (ids.length === 0) {
+        console.log('No participants to delete');
+        return;
+      }
       
-      const { error } = await supabase
+      console.log('Deleting participants:', ids);
+      
+      const { error, data } = await supabase
         .from('participants')
         .delete()
         .in('id', ids);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
+      
+      console.log('Delete successful:', data);
     } catch (error) {
       console.error('Error deleting all participants:', error);
-      Alert.alert('Error', 'Failed to clear database');
+      Alert.alert('Error', `Failed to clear database: ${error.message || 'Unknown error'}`);
     }
   };
 
