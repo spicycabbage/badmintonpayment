@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Replace these with your Supabase project credentials
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+// Get credentials from environment variables
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://vplvgsywmqcoruhkopyk.supabase.co';
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_7j-u-hyLgYpYKVe-F4ZWgQ_Yy96UmrH';
+
+if (!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
+  console.warn('Warning: Using fallback SUPABASE_ANON_KEY. Please set EXPO_PUBLIC_SUPABASE_ANON_KEY in Vercel environment variables');
+}
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
