@@ -352,6 +352,9 @@ export default function App() {
       
       if (error) throw error;
       
+      // Reload to update UI
+      await loadParticipants();
+      
       setReviewModalVisible(false);
       setParsedNames([]);
     } catch (error) {
@@ -372,6 +375,7 @@ export default function App() {
         paymentMethod: null,
       };
       await saveParticipant(newParticipant);
+      await loadParticipants(); // Reload to update UI
       setNameInput('');
       setModalVisible(false);
     }
@@ -431,7 +435,7 @@ export default function App() {
 
   const confirmClearAll = async () => {
     await deleteAllParticipants();
-    setParticipants([]); // Clear local state immediately
+    await loadParticipants(); // Reload to update UI
     setClearAllModalVisible(false);
   };
 
