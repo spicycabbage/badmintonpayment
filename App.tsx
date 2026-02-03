@@ -327,19 +327,27 @@ export default function App() {
   };
 
   const addParsedParticipants = async () => {
-    const newParticipants = parsedNames.map(name => ({
-      id: generateUUID(),
-      name: name,
-      paymentMethod: null as null,
-    }));
-    
-    // Save to database
-    for (const participant of newParticipants) {
-      await saveParticipant(participant);
+    try {
+      const newParticipants = parsedNames.map(name => ({
+        id: generateUUID(),
+        name: name,
+        payment_method: null,
+        note: null
+      }));
+      
+      // Batch insert to database
+      const { error } = await supabase
+        .from('participants')
+        .insert(newParticipants);
+      
+      if (error) throw error;
+      
+      setReviewModalVisible(false);
+      setParsedNames([]);
+    } catch (error) {
+      console.error('Error adding participants:', error);
+      Alert.alert('Error', 'Failed to add participants to database');
     }
-    
-    setReviewModalVisible(false);
-    setParsedNames([]);
   };
 
   const removeParsedName = (index: number) => {
