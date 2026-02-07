@@ -100,8 +100,16 @@ export default function App() {
     }
   };
 
-  const saveParticipant = async (participant: Participant) => {
+  const saveParticipant = async (participant: Participant, updateLocal: boolean = true) => {
     try {
+      // Optimistic update - update local state immediately
+      if (updateLocal) {
+        setParticipants(prev => 
+          prev.map(p => p.id === participant.id ? participant : p)
+        );
+      }
+      
+      // Then save to database in background
       const { error } = await supabase
         .from('participants')
         .upsert({
@@ -114,6 +122,8 @@ export default function App() {
       if (error) throw error;
     } catch (error) {
       console.error('Error saving participant:', error);
+      // Reload from database if save fails
+      loadParticipants();
       Alert.alert('Error', 'Failed to save to database');
     }
   };
