@@ -382,18 +382,16 @@ export default function App() {
   };
 
   const handlePayment = (participantId: string, method: 'Cash' | 'E-Transfer') => {
+    updatePaymentMethod(participantId, method);
+  };
+
+  const handleNoteClick = (participantId: string) => {
     const participant = participants.find(p => p.id === participantId);
-    
-    if (method === 'E-Transfer') {
-      setSelectedParticipant(participant || null);
-      // Load existing note if available
-      const existingNote = participant?.note || '';
-      setNoteInput(existingNote);
-      setNoteModalVisible(true);
-    } else {
-      // For Cash, clear any note
-      updatePaymentMethod(participantId, method, '');
-    }
+    setSelectedParticipant(participant || null);
+    // Load existing note if available
+    const existingNote = participant?.note || '';
+    setNoteInput(existingNote);
+    setNoteModalVisible(true);
   };
 
   const updatePaymentMethod = async (participantId: string, method: 'Cash' | 'E-Transfer', note?: string) => {
@@ -410,7 +408,11 @@ export default function App() {
 
   const saveNote = () => {
     if (selectedParticipant) {
-      updatePaymentMethod(selectedParticipant.id, 'E-Transfer', noteInput.trim());
+      // Update note without changing payment method
+      const participant = participants.find(p => p.id === selectedParticipant.id);
+      if (participant) {
+        updatePaymentMethod(selectedParticipant.id, participant.paymentMethod || 'E-Transfer', noteInput.trim());
+      }
       setNoteModalVisible(false);
       setSelectedParticipant(null);
       setNoteInput('');
@@ -606,13 +608,32 @@ export default function App() {
               styles.etransferButton,
               item.paymentMethod === 'E-Transfer' && styles.selectedEtransfer,
             ]}
-            onPress={() => handlePayment(item.id, 'E-Transfer')}
+            onPress={() => item.paymentMethod === 'E-Transfer' 
+              ? clearPayment(item.id) 
+              : handlePayment(item.id, 'E-Transfer')
+            }
           >
             <Text style={[
               styles.buttonText,
               item.paymentMethod === 'E-Transfer' && styles.selectedButtonText,
             ]}>
               {item.paymentMethod === 'E-Transfer' ? '✓' : 'e'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.paymentButton,
+              styles.noteButton,
+              item.note && styles.noteButtonActive,
+            ]}
+            onPress={() => handleNoteClick(item.id)}
+          >
+            <Text style={[
+              styles.buttonText,
+              item.note && styles.noteButtonTextActive,
+            ]}>
+              📝
             </Text>
           </TouchableOpacity>
         </View>
@@ -1448,6 +1469,17 @@ const styles = StyleSheet.create({
   etransferButton: {
     backgroundColor: '#fff',
     borderColor: '#2563eb',
+  },
+  noteButton: {
+    backgroundColor: '#fff',
+    borderColor: '#9ca3af',
+  },
+  noteButtonActive: {
+    backgroundColor: '#fbbf24',
+    borderColor: '#f59e0b',
+  },
+  noteButtonTextActive: {
+    color: '#fff',
   },
   selectedCash: {
     backgroundColor: '#10b981',
