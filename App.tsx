@@ -988,7 +988,7 @@ export default function App() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* E-Transfer Note Modal */}
+      {/* Note Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -1010,14 +1010,14 @@ export default function App() {
           >
             <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
               <View style={styles.compactModalContent}>
-                <Text style={styles.modalTitle}>E-Transfer Note</Text>
+                <Text style={styles.modalTitle}>Note</Text>
                 <Text style={styles.modalSubtitle}>
                   {selectedParticipant?.name}
                 </Text>
                 
                 <TextInput
                   style={styles.noteInput}
-                  placeholder="E-Transfer sender name (optional)"
+                  placeholder="Add a note (optional)"
                   value={noteInput}
                   onChangeText={setNoteInput}
                   multiline={false}
