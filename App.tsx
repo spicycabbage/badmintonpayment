@@ -406,12 +406,16 @@ export default function App() {
     }
   };
 
-  const saveNote = () => {
+  const saveNote = async () => {
     if (selectedParticipant) {
-      // Update note without changing payment method
+      // Update only the note, don't change payment method
       const participant = participants.find(p => p.id === selectedParticipant.id);
       if (participant) {
-        updatePaymentMethod(selectedParticipant.id, participant.paymentMethod || 'E-Transfer', noteInput.trim());
+        const updated = {
+          ...participant,
+          note: noteInput.trim()
+        };
+        await saveParticipant(updated);
       }
       setNoteModalVisible(false);
       setSelectedParticipant(null);
