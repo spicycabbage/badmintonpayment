@@ -429,7 +429,7 @@ export default function App() {
       const updated = {
         ...participant,
         paymentMethod: null,
-        note: ''
+        // Keep the note - don't clear it
       };
       await saveParticipant(updated);
     }
